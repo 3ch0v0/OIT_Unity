@@ -72,7 +72,6 @@ public class DPRendererFeature : ScriptableRendererFeature
             colDesc.msaaSamples = 1;
             colDesc.bindMS = false;
             
-            
             var depthDesc = renderingData.cameraData.cameraTargetDescriptor;
             depthDesc.graphicsFormat = GraphicsFormat.None;
             depthDesc.depthBufferBits = 24;
@@ -81,17 +80,15 @@ public class DPRendererFeature : ScriptableRendererFeature
             
             RenderingUtils.ReAllocateIfNeeded(ref accumulateColorRT, colDesc, name: "DP_AccumulateColor");
             RenderingUtils.ReAllocateIfNeeded(ref currentColorRT, colDesc, name: "DP_CurrentColor");
-
-            
             RenderingUtils.ReAllocateIfNeeded(ref depth0RT, depthDesc, name: "DP_Depth0");
             RenderingUtils.ReAllocateIfNeeded(ref depth1RT, depthDesc, name: "DP_Depth1");
-            
         }
 
        
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
             
+            int peelCount = OITRegistry.Layers;
             
             CommandBuffer cmd = CommandBufferPool.Get("DepthPeelingPass");
             
@@ -119,11 +116,8 @@ public class DPRendererFeature : ScriptableRendererFeature
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
                 
-                //---------------- Peeling & blend Passes---------------------
-                
-                //drawingSettings.overrideShader= peelingShader;
-                //drawingSettings.overrideMaterial = initialMat;
-                for (int i = 0; i < layers; i++)
+                //-------- Peeling & blend Passes-------------
+                for (int i = 0; i < peelCount; i++)
                 {
                     cmd.BeginSample("DP_PeelingPass"+i);
                     RTHandle currentDepthRT = (i % 2 == 0) ? depth0RT : depth1RT;
@@ -147,15 +141,13 @@ public class DPRendererFeature : ScriptableRendererFeature
                     cmd.Clear();
                 }
 
-                //-------------- composite----------------------
-               
+                //-------Composite pass-------------
                 cmd.BeginSample("DepthPeeling_CompositePass");
                 CoreUtils.SetRenderTarget(cmd,sourceColorRT, sourceDepthRT);
                 cmd.SetGlobalTexture("_LayerColorTex", accumulateColorRT);
                 cmd.DrawProcedural(Matrix4x4.identity, compositeMat,0,MeshTopology.Triangles, 3, 1);
                 cmd.EndSample("DepthPeeling_CompositePass");
                 cmd.EndSample("Depth Peeling Process");
-            //}
             
             context.ExecuteCommandBuffer(cmd); 
             CommandBufferPool.Release(cmd);
@@ -169,13 +161,6 @@ public class DPRendererFeature : ScriptableRendererFeature
         
         public void Dispose()
         {
-            // for (int i = 0; i < layers; i++)
-            // {
-            //     colorRT[i]?.Release();
-            // }
-            // depthRT[0]?.Release();
-            // depthRT[1]?.Release();
-            // peelDepthAttachment?.Release();
             accumulateColorRT?.Release();
             currentColorRT?.Release();
             depth0RT?.Release();
@@ -192,12 +177,12 @@ public class DPRendererFeature : ScriptableRendererFeature
         m_ScriptablePass = new DPRenderPass(depthPeelingLayerMask, depthPeelingInitialMat,depthPeelingPeelingMat, depthPeelingBlendMat, depthPeelingCompositeMat,peelLayerCount, depthPeelingInitialShader,
             depthPeelingBlendMat.shader);
         m_ScriptablePass.ConfigureInput(ScriptableRenderPassInput.Color); 
-        m_ScriptablePass.renderPassEvent = RenderPassEvent.AfterRenderingSkybox;
+        m_ScriptablePass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
     }
     
     public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
     {
-       
+        m_ScriptablePass.ConfigureInput(ScriptableRenderPassInput.Depth);
         if (OITRegistry.Objects[OITAlgorithm.DepthPeeling].Count == 0)
         {
             return;
