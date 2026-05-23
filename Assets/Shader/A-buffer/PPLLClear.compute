@@ -1,13 +1,11 @@
-#pragma kernel ClearStartOffset
+#pragma kernel AClear
 
-// 对应截图 Image 7: 变量名 startOffetBuffer (少个s)
 RWByteAddressBuffer startOffetBuffer;
-int screenWidth;
+int _ScreenWidth;
 
-[numthreads(32,32,1)]
-void ClearStartOffset(uint3 id : SV_DispatchThreadID)
+[numthreads(8, 8, 1)]
+void AClear (uint3 id: SV_DispatchThreadID)
 {
-    // 逻辑：Head Pointer 初始化为 0
-    // 地址计算：4 * (width * y + x)
-    startOffetBuffer.Store(4 * (screenWidth * id.y + id.x), 0);
+    uint index = id.y * _ScreenWidth + id.x;
+    startOffetBuffer.Store(index * 4, 0);
 }

@@ -4,7 +4,10 @@ Shader "OIT/PPLL_Resolve"
     SubShader
     {
         Tags { "RenderPipeline"="UniversalPipeline" }
-        ZTest Always ZWrite Off Cull Off Blend Off
+        ZTest Always
+        ZWrite Off
+        Cull Off
+        Blend One OneMinusSrcAlpha
 
         Pass
         {
@@ -14,81 +17,82 @@ Shader "OIT/PPLL_Resolve"
             #pragma target 5.0
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
             #include "PPLLCommon.hlsl"
 
-            // Buffer
+            #define MAX_SORTED_PIXELS 64
+            StructuredBuffer<PPLLLinkedListNode> fragLinkedBuffer;
             ByteAddressBuffer startOffetBuffer;
-            StructuredBuffer<FragmentAndLinkBuffer_STRUCT> fragLinkedBuffer;
             
-            // 【关键】声明 C# 传过来的背景纹理
-            TEXTURE2D_X(_PPLL_BlitRT);
-            SAMPLER(sampler_PPLL_BlitRT);
-
-            #define MAX_SORTED_PIXELS 16
-
-            // 使用 OITVaryings 避免与 Blit.hlsl 冲突
-            struct OITVaryings
+            struct Attributes
             {
-                float4 positionCS : SV_POSITION;
-                float2 texcoord : TEXCOORD0;
+                uint vertexID : SV_VertexID; 
             };
 
-            OITVaryings vert(uint vertexID : SV_VertexID)
+            struct Varyings
             {
-                OITVaryings output;
-                output.positionCS = GetFullScreenTriangleVertexPosition(vertexID);
-                output.texcoord = GetFullScreenTriangleTexCoord(vertexID);
+                float4 positionCS : SV_POSITION;
+            };
+
+            Varyings vert(Attributes input)
+            {
+                Varyings output;
+                float x = -1.0 + 2.0 * ((input.vertexID & 1) << 1);
+                float y = -1.0 + 2.0 * ((input.vertexID & 2));
+                output.positionCS = float4(x, y, 0.0, 1.0);
                 return output;
             }
-
-            float4 renderLinkedList(float4 bgCol, float2 pos, uint uSampleIndex)
+            
+            float4 frag(Varyings input) : SV_Target
             {
-                // 获取头指针
-                uint uStartOffsetAddress = 4 * (_ScreenParams.x * (pos.y - 0.5) + (pos.x - 0.5));
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                
+                //float4 col = SAMPLE_TEXTURE2D(_PPLL_BlitRT, sampler_PPLL_BlitRT, input.texcoord);
+                
+                uint2 pixelCoord = uint2(input.positionCS.xy);
+                uint uStartOffsetAddress = 4 * (pixelCoord.y * (uint)_ScreenParams.x + pixelCoord.x);
                 uint uOffset = startOffetBuffer.Load(uStartOffsetAddress);
 
-                FragmentAndLinkBuffer_STRUCT SortedPixels[MAX_SORTED_PIXELS];
+                PPLLLinkedListNode SortedPixels[MAX_SORTED_PIXELS];
                 int nNumPixels = 0;
 
-                // 遍历链表
-                while (uOffset != 0)
+                
+                while (uOffset != 0 && nNumPixels < MAX_SORTED_PIXELS)
                 {
-                    if (nNumPixels >= MAX_SORTED_PIXELS) break;
-                    FragmentAndLinkBuffer_STRUCT Element = fragLinkedBuffer[uOffset];
+                    PPLLLinkedListNode Element = fragLinkedBuffer[uOffset];
                     SortedPixels[nNumPixels] = Element;
                     nNumPixels++;
                     uOffset = Element.next;
                 }
 
-                // 排序 (Bubble Sort)
-                for (int i = 0; i < nNumPixels - 1; i++) {
-                    for (int j = i + 1; j > 0; j--) {
-                        float depth = UnpackDepth(SortedPixels[j].uDepthSampleIdx);
-                        float prevDepth = UnpackDepth(SortedPixels[j-1].uDepthSampleIdx);
-                        if (prevDepth < depth) {
-                            FragmentAndLinkBuffer_STRUCT temp = SortedPixels[j-1];
-                            SortedPixels[j-1] = SortedPixels[j];
+                if (nNumPixels == 0) discard;
+
+                // Sort,Back-to-Front
+                for (int i = 0; i < nNumPixels - 1; i++)
+                {
+                    for (int j = i + 1; j > 0; j--)
+                    {
+                        float depth1 = UnpackDepth(SortedPixels[j].uDepthSampleIdx);
+                        float depth2 = UnpackDepth(SortedPixels[j - 1].uDepthSampleIdx);
+                        
+                        if (depth2 < depth1)
+                        {
+                            PPLLLinkedListNode temp = SortedPixels[j - 1];
+                            SortedPixels[j - 1] = SortedPixels[j];
                             SortedPixels[j] = temp;
                         }
                     }
                 }
-
-                // 混合
-                float4 res = bgCol;
+                float4 accumColor = float4(0.0, 0.0, 0.0, 0.0);
+                // Blend, Back-to-Front
                 for (int k = 0; k < nNumPixels; k++)
                 {
                     float4 vPixColor = UnpackRGBA(SortedPixels[k].pixelColor);
-                    res.rgb = lerp(res.rgb, vPixColor.rgb, vPixColor.a);
+                    
+                    // SrcAlpha * SrcColor + (1 - SrcAlpha) * DstColor
+                    accumColor.rgb = vPixColor.rgb * vPixColor.a + accumColor.rgb * (1.0 - vPixColor.a);
+                    accumColor.a   = vPixColor.a + accumColor.a * (1.0 - vPixColor.a);
                 }
-                return res;
-            }
-
-            half4 frag(OITVaryings input) : SV_Target
-            {
-                // 采样背景
-                float4 col = SAMPLE_TEXTURE2D_X(_PPLL_BlitRT, sampler_PPLL_BlitRT, input.texcoord);
-                return renderLinkedList(col, input.positionCS.xy, 0);
+                return accumColor;
             }
             ENDHLSL
         }
