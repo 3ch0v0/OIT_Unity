@@ -91,32 +91,10 @@
 
                 //float3 transparentPremul = frontPremul + remFront * tailPremul;
                 float totalAlpha = saturate(1.0 - remFront * tailAuccm.a);
-
-                // if (transparentAlpha <= 0.00001)
-                // {
-                //     discard;
-                // }
+                
 
                 float3 predictedTailCol= DFAMLP(Aavg, Cavg, Caccum, Coit);
-
-                float3 finalCol= Coit + (1.0 - frontAlpha) * predictedTailCol;
-                
-                //return float4(finalCol, transparentAlpha);
-                //if (fragCount==0)
-                //{
-                //     return float4(Coit,remFront);
-                //    discard;
-                //}
-                // else
-                // {
-                //      return float4(1,0,0,frontAlpha);
-                // }
-                //fronttoback
                 float3 finalColor =  Coit + predictedTailCol*remFront;
-                float finalAlpha = remFront*(1-tailAuccm.a);
-                //backtofront
-                //return float4(max(predictedTailCol,0.01),saturate(1-tailAuccm.a));
-                //return float4(Coit,frontAlpha);
                 return float4(finalColor,totalAlpha);
                 
             }

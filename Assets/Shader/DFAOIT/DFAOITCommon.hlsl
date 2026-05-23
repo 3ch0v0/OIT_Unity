@@ -71,6 +71,7 @@ float bias3[3] = {-0.7872798 ,  0.04166554, -0.61643946};
     float rslt1[32]; //hidden layer1
     float rslt2[16];//hidden layer2
     
+    //layer1
     for(int i=0;i<32;i++)
     {
         rslt1[i]=0.0f;
