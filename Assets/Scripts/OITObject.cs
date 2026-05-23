@@ -1,6 +1,6 @@
 using UnityEngine;
+[ExecuteAlways] 
 
-[ExecuteAlways] // 保证在 Editor 编辑模式下也能正常注册，方便你实时看效果
 public class OITObject : MonoBehaviour
 {
     [Tooltip("Target Algorithm")]
