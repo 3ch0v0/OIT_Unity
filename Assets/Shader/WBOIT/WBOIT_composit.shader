@@ -59,10 +59,10 @@ Shader "OIT/WBOIT_Composite"
                 if (isinf(max(abs(accum.x), max(abs(accum.y), abs(accum.z))))) {
                     accum.rgb = float3(accum.a, accum.a, accum.a);
                 }
-                if (reveal >=1.0)
-	            {discard;}
+                if (reveal >=1.0) {discard;}
+                
                 if (isinf(accum.a)) {
-                    accum.a = 1000.0; //防止除以无穷大
+                    accum.a = 1000.0; 
                 }
                 
                 float3 averageColor = accum.rgb / max(accum.a, 0.00001);

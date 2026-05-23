@@ -61,10 +61,7 @@ Shader "OIT/WBOIT"
             CBUFFER_END
             float CalculateWeight(float3 col,float fragDepth, float alpha)
             {
-                //return alpha * max(0.01, 3000.0 * pow(max(0.01, 1.0 - fragDepth / 200.0), 3.0));
                 return max(min(1.0, max(max(col.r, col.g), col.b) * alpha), alpha) * clamp(0.03 / (1e-5 + pow(fragDepth / 200, 4.0)), 1e-2, 3e3);
-                //return alpha * clamp(0.03 / (1e-5 + pow(fragDepth, 4.0)), 1e-2, 3e3);
-                //return alpha * max(1e-2, 200.0 * pow(max(0.0, 1.0 - fragDepth / 20.0), 3.0));
             }
             
             Varyings vert (Attributes i)
@@ -91,11 +88,7 @@ Shader "OIT/WBOIT"
 
                 float3 finalColor= CalculateLighting( texColor.rgb, viewDirWS,  normalWS,  _Glossiness,  _SpecularColor);
                 
-                float3 premultipliedColor = finalColor.rgb * alpha;
-                float revealage = 1.0 - alpha;
-
-                //if (alpha < 0.01) discard;
-                float z = i.positionCS.w;
+                float z = i.positionCS.w/ i.positionCS.z;
                 
                 float weight = CalculateWeight(finalColor, z, alpha);
                 weight = min(weight, 10.0);
