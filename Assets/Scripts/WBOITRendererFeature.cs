@@ -90,7 +90,7 @@ public class WBOITRenderFeature : ScriptableRendererFeature
             RTHandle cameraColorTarget = m_Renderer.cameraColorTargetHandle;
             RTHandle cameraDepthTarget = m_Renderer.cameraDepthTargetHandle;
 
-            //-------pass1: clean MRT
+            //-------Clean pass-------
             cmd.SetRenderTarget(accumTex);
             cmd.ClearRenderTarget(false, true, new Color(0, 0, 0, 0));
 
@@ -101,17 +101,16 @@ public class WBOITRenderFeature : ScriptableRendererFeature
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
 
-            //------pass 2: draw  
+            //------Accumulate pass------  
+            cmd.SetGlobalTexture("_AccumTex", accumTex);
+            cmd.SetGlobalTexture("_RevealTex", revealTex);
+            
             var drawingSettings = CreateDrawingSettings(shaderTagIdList, ref renderingData, SortingCriteria.CommonTransparent);
             drawingSettings.overrideMaterial = settings.wboitMaterial;
             context.DrawRenderers(renderingData.cullResults, ref drawingSettings, ref filteringSettings);
             
-            cmd.SetGlobalTexture("_AccumTex", accumTex);
-            cmd.SetGlobalTexture("_RevealTex", revealTex);
-
-            
+            //------Composite pass------
             cmd.SetRenderTarget(cameraColorTarget);
-            
             cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, settings.compositeMaterial, 0, 0);
 
             context.ExecuteCommandBuffer(cmd);
