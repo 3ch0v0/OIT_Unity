@@ -1,5 +1,46 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7803737903081919111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ff16e8e53a081540827f1af7d1fc269, type: 3}
+  m_Name: AbufferRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  settings:
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 128
+    clearComputeShader: {fileID: 7200000, guid: 1e94c8953c70e294a82579d28f7549a2,
+      type: 3}
+    buildMaterial: {fileID: 2100000, guid: 5d24be3eb9876314fabea1ff91c453e2, type: 2}
+    resolveMaterial: {fileID: 2100000, guid: aba363693c11538438a9aebc03e1dd63, type: 2}
+--- !u!114 &-5168647130794524297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30942e8d55f0f0c4fb56b42e5e10f9a5, type: 3}
+  m_Name: DFAOITRendererFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  transparentLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  compositeShader: {fileID: 4800000, guid: e7923069cba6e4d439eae6bbfe4808a6, type: 3}
+  dfaInitialMat: {fileID: 2100000, guid: 3b15b6a7928662a448f0a40b26e8d915, type: 2}
+  dfaPeelingMat: {fileID: 2100000, guid: bb6c2ec1a5b5ad24281d7dbc1a095b00, type: 2}
+  dfaBlendMat: {fileID: 2100000, guid: fead29e6c25592e48a5281521d9c1148, type: 2}
 --- !u!114 &-1878332245247344467
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -35,19 +76,6 @@ MonoBehaviour:
   - {fileID: 2800000, guid: 3302065f671a8450b82c9ddf07426f3a, type: 3}
   - {fileID: 2800000, guid: 56a77a3e8d64f47b6afe9e3c95cb57d5, type: 3}
   m_Shader: {fileID: 4800000, guid: 0849e84e3d62649e8882e9d6f056a017, type: 3}
---- !u!114 &-1302252367631914688
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ee67e36f6958b74291994b4c2ba6007, type: 3}
-  m_Name: OrderIndependentTransparencyRenderer
-  m_EditorClassIdentifier: 
-  m_Active: 1
 --- !u!114 &-142478783786089355
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62,9 +90,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Active: 0
   settings:
-    clearShader: {fileID: 7200000, guid: 1e94c8953c70e294a82579d28f7549a2, type: 3}
-    buildShader: {fileID: 4800000, guid: 8c141a3abb247cd4a94e9e719f2a1100, type: 3}
-    resolveShader: {fileID: 4800000, guid: 837429d576bb5ce4aac593304f69fb71, type: 3}
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    clearComputeShader: {fileID: 0}
+    buildMaterial: {fileID: 0}
+    resolveMaterial: {fileID: 0}
 --- !u!114 &-23544840274792337
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,10 +140,13 @@ MonoBehaviour:
     hdrDebugViewPS: {fileID: 4800000, guid: 573620ae32aec764abd4d728906d2587, type: 3}
   m_RendererFeatures:
   - {fileID: -1878332245247344467}
-  - {fileID: -1302252367631914688}
   - {fileID: 3783599589190902253}
   - {fileID: -23544840274792337}
-  m_RendererFeatureMap: adc0de57c6d2eee54069630b5f78edededa109aec70b82346fb020af175aacff
+  - {fileID: -5168647130794524297}
+  - {fileID: 8076473532513468005}
+  - {fileID: 1556498911285541732}
+  - {fileID: -7803737903081919111}
+  m_RendererFeatureMap: adc0de57c6d2eee5eda109aec70b82346fb020af175aacff7781a6b7d14645b8653e4f07e365157064fb745c83cb991579ed8c1eb98db393
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -149,12 +183,33 @@ MonoBehaviour:
     passOperation: 2
     failOperation: 0
     zFailOperation: 0
-  m_ShadowTransparentReceive: 1
+  m_ShadowTransparentReceive: 0
   m_RenderingMode: 0
   m_DepthPrimingMode: 0
   m_CopyDepthMode: 0
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 1
+--- !u!114 &1556498911285541732
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab331f5d7c2f3b047863f2af99497fae, type: 3}
+  m_Name: KbufferRenderFeature
+  m_EditorClassIdentifier: 
+  m_Active: 1
+  settings:
+    layerMask:
+      serializedVersion: 2
+      m_Bits: 1024
+    clearComputeShader: {fileID: 7200000, guid: 3f4832c55bb6abd4c810ba93cc3a6890,
+      type: 3}
+    buildMaterial: {fileID: 2100000, guid: bfce30be47877604c839623cd91b8371, type: 2}
+    compositeMaterial: {fileID: 2100000, guid: 76573f82ee148ad4a95dc15c2ff73354, type: 2}
 --- !u!114 &2619314855705258603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,3 +295,16 @@ MonoBehaviour:
   ddpPeelBoundsShader: {fileID: 4800000, guid: a5d7439ef7785724baa47d8dd60b7edc, type: 3}
   ddpAccumulateShader: {fileID: 4800000, guid: 99d9f228a199a5f479b8dd46aeeaae7d, type: 3}
   ddpCompositeShader: {fileID: 4800000, guid: db18eca5b9ee7b04d833917081f655bb, type: 3}
+--- !u!114 &8076473532513468005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ee67e36f6958b74291994b4c2ba6007, type: 3}
+  m_Name: OrderIndependentTransparencyRenderer
+  m_EditorClassIdentifier: 
+  m_Active: 1
