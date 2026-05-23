@@ -1,0 +1,23 @@
+#pragma kernel KClear
+
+RWStructuredBuffer<float4> _KBufferColor;
+RWStructuredBuffer<float> _KBufferDepth;
+int _ScreenWidth;
+int _ScreenHeight;
+int _KSize;
+
+[numthreads(8,8,1)]
+void KClear(uint3 id : SV_DispatchThreadID)
+{
+    
+    uint pixelIdx = id.y * _ScreenWidth + id.x;
+    uint baseIdx = pixelIdx * _KSize;
+    if (id.x >= _ScreenWidth || id.y >= _ScreenHeight)
+        return;
+    for (int i = 0; i < _KSize; i++)
+    {
+       
+        _KBufferColor[baseIdx + i] = float4(0.0, 0.0, 0.0, 0.0);
+        _KBufferDepth[baseIdx + i] = 0.0; 
+    }
+}
