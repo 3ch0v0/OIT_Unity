@@ -84,7 +84,6 @@ Shader "OIT/DP_Peeling"
                 float3 viewDirWS = GetWorldSpaceNormalizeViewDir(i.positionWS);
 
                 float3 finalColor= CalculateLighting( texColor.rgb, viewDirWS,  normalWS,  _Glossiness,  _SpecularColor);
-                
                 float currDepth= i.positionCS.z;
                 
                 float2 ssUV = i.positionSS.xy/i.positionSS.w;
@@ -104,7 +103,7 @@ Shader "OIT/DP_Peeling"
                  }
                 #endif
                 
-                return float4(finalColor,alpha);
+                return float4(finalColor*alpha,alpha);
                                                                   
                 
             }

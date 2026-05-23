@@ -6,7 +6,7 @@ Shader "OIT/DP_Blend"
     SubShader
     {
         Tags { "RenderPipeline" = "UniversalPipeline" }
-        LOD 100
+        
 
         Pass
         {
@@ -16,6 +16,7 @@ Shader "OIT/DP_Blend"
             //color:Src * DstAlpha + Dst * 1
             // Alpha：Src * 0 + Dst * (1 - SrcAlpha)
             Blend DstAlpha One, zero OneMinusSrcAlpha
+            
             ColorMask RGBA
             
             HLSLPROGRAM
@@ -59,7 +60,7 @@ Shader "OIT/DP_Blend"
             {
                
                 float4 layerCol=SAMPLE_TEXTURE2D(_LayerColorTex,sampler_LayerColorTex, i.uv);
-                layerCol.rgb*=layerCol.a;
+                //layerCol.rgb*=layerCol.a;
                                 
                 return layerCol;
                                                                   

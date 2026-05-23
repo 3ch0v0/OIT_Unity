@@ -12,12 +12,12 @@ Shader "OIT/DP_Initial"
     {
         Tags { "RenderType"="Opaque"  "RenderPipeline" = "UniversalPipeline" "LightMode" = "DP_Initial" }
         LOD 100
-
         
         Pass
         {
             Name "DP_Initial"
             Tags { "LightMode" = "DP_Peeling" }
+            
             ZWrite on
             ZTest LEqual
             Cull Off
@@ -83,7 +83,7 @@ Shader "OIT/DP_Initial"
 
                 float3 finalColor= CalculateLighting( texColor.rgb, viewDirWS,  normalWS,  _Glossiness,  _SpecularColor);
     
-                return float4(finalColor, alpha);
+                return float4(finalColor*alpha, alpha);
                                                                   
                 
             }
