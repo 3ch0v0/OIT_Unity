@@ -14,10 +14,10 @@ TagManager:
   - TransparentWBOIT
   - TransparentAbuffer
   - TransparentDepthPeeling
+  - TransparentDualDepthPeeling
+  - TransparentKbuffer
   - 
-  - 
-  - 
-  - 
+  - TransparentDFAOIT
   - 
   - 
   - 
